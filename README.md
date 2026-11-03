@@ -24,9 +24,9 @@
 The first preset focuses on **minimal furniture product photography** — sofas, beds, chairs and tables on clean neutral backgrounds. The architecture is intended to grow beyond furniture and Instagram.
 
 > [!IMPORTANT]
-> **Project status:** This repository currently contains documentation only. The Python application, dependencies and end-to-end publishing integration have not yet been committed. The capabilities below describe the project plan, not implemented features.
+> **Project status:** The Mac automation source code and setup scripts are available in this repository. Offline demo and syntax checks have been performed on the original project; **live OpenAI, Cloudinary and Instagram integration has not been verified with your credentials**. Publishing starts disabled.
 
-## ✨ Planned features
+## ✨ Features
 
 | Feature | What it does |
 | :--- | :--- |
@@ -95,11 +95,40 @@ source .venv/bin/activate
 
 ### 3. Install and test
 
-The application files and dependency manifest are **not in this repository yet**. Once added, follow the installation instructions shipped with the code, create a local `.env`, generate **one sample** with publishing disabled, and verify the output before switching on automatic posts.
+Run the installer (it creates a virtual environment, installs packages, copies `.env.example` to `.env`, and generates a free offline watermark demo):
+
+```bash
+chmod +x install_mac.sh enable_mac_schedule.sh disable_mac_schedule.sh
+./install_mac.sh
+```
+
+Edit `.env` with your OpenAI key. Start with `DAILY_COUNT=1` and `AUTO_PUBLISH=false`:
+
+```bash
+.venv/bin/python snj.py doctor
+.venv/bin/python snj.py daily
+.venv/bin/python snj.py status
+```
+
+Check `output/YYYY-MM-DD/` for the generated image and `output/queue.json` for its caption and schedule. API generation incurs charges. To publish, configure your Meta professional account ID, access token, and Cloudinary URL, test access with `doctor`, and change `AUTO_PUBLISH=true` **only after verifying everything**.
+
+To enable the local Mac scheduler (runs every 15 minutes while the Mac is awake and logged in):
+
+```bash
+./enable_mac_schedule.sh
+```
+
+To disable it:
+
+```bash
+./disable_mac_schedule.sh
+```
+
+See `snj.py` for the `demo`, `daily`, `publish`, `run`, `status`, and `doctor` commands. Uncertain publication outcomes must be checked manually to avoid duplicate posts.
 
 ## ⚙️ Example configuration (planned)
 
-The keys below illustrate the intended setup; they aren't a verified implementation schema yet.
+The keys below are supported by the included `snj.py` script. Use `.env.example` for the complete template.
 
 ```dotenv
 OPENAI_API_KEY=replace_with_your_key
@@ -121,16 +150,17 @@ The initial goal is **20 unique generated images per day**, or approximately **6
 
 ## 🧭 Roadmap
 
-- [ ] Add runnable Python source and dependency file
-- [ ] Create configurable prompt and product-category templates
-- [ ] Build image generator and local content archive
-- [ ] Implement Pillow logo watermarking
-- [ ] Generate captions, CTAs and hashtags
-- [ ] Add review-first publishing queue
-- [ ] Implement temporary image hosting + Meta API publishing
-- [ ] Track publish IDs, errors, retries and account quotas
-- [ ] Set up macOS `launchd` scheduling
-- [ ] Add tests, screenshots and troubleshooting
+- [x] Add runnable Python source and dependency file
+- [x] Create configurable prompt and product-category templates
+- [x] Build image generator and local content archive
+- [x] Implement Pillow logo watermarking
+- [x] Generate captions, CTAs and hashtags
+- [x] Keep publishing disabled by default
+- [x] Implement Cloudinary image hosting + Meta API publishing path
+- [x] Track post IDs and uncertain publish status in local queue
+- [x] Set up macOS `launchd` scheduling
+- [ ] Complete real-account end-to-end integration testing
+- [ ] Add automated tests, screenshots and troubleshooting
 - [ ] Explore other social platforms and content categories
 
 ## 🛡️ Safety & reliability
