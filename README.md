@@ -75,7 +75,8 @@ AI concept renders should be labeled appropriately; don't present designs as man
 ### Requirements
 
 - macOS and Python **3.11+**
-- [OpenAI API key](https://platform.openai.com/api-keys)
+- **No OpenAI API key needed** when using the default local generator
+- Optional [OpenAI API key](https://platform.openai.com/api-keys) if you choose the paid provider
 - Instagram professional account with Meta publishing authorization
 - Temporary public HTTPS media hosting for Instagram API uploads
 
