@@ -21,7 +21,7 @@
 
 **AI Content Engine** aims to automate the creative process from initial concept to published social post: generate distinctive AI images, apply subtle brand watermarks, create unique captions, organize content locally, and publish through authorized platform APIs.
 
-The first preset focuses on **minimal furniture product photography** — sofas, beds, chairs and tables on clean neutral backgrounds. The architecture is intended to grow beyond furniture and Instagram.
+The first preset focuses on **minimal product product photography** — lamps, bags, accessories and homewares on clean neutral backgrounds. The architecture is intended to grow beyond product and Instagram.
 
 > [!IMPORTANT]
 > **Project status:** The Mac automation source code and setup scripts are available in this repository. Offline demo and syntax checks have been performed on the original project; **live OpenAI, Cloudinary and Instagram integration has not been verified with your credentials**. Publishing starts disabled.
@@ -66,7 +66,7 @@ A consistent, premium catalogue look:
 - **Neutral backgrounds:** ivory, beige, warm grey or off-white
 - **Realistic presentation:** natural shadows and believable proportions
 - **Light branding:** small logo along the lower edge
-- **Variety:** beds, sofas, side tables, accent chairs, coffee tables, consoles and ottomans
+- **Variety:** lamps, accessories, homewares and other consumer products
 
 AI concept renders should be labeled appropriately; don't present designs as manufactured inventory unless a supplier can make them.
 
@@ -113,12 +113,12 @@ chmod +x install_local_ai.sh
 Set `IMAGE_PROVIDER=local`, `AI_CAPTIONS=false`, `DAILY_COUNT=1`, and `AUTO_PUBLISH=false` in `.env`. You do **not** need an OpenAI API key. The first image requires a sizeable model download.
 
 ```bash
-.venv/bin/python snj.py doctor
-.venv/bin/python snj.py daily
-.venv/bin/python snj.py status
+.venv/bin/python content_engine.py doctor
+.venv/bin/python content_engine.py daily
+.venv/bin/python content_engine.py status
 ```
 
-Check `output/YYYY-MM-DD/` for the generated image and `output/queue.json` for its caption and schedule. API generation incurs charges. To publish, configure your Meta professional account ID, access token, and Cloudinary URL, test access with `doctor`, and change `AUTO_PUBLISH=true` **only after verifying everything**.
+Check `output/YYYY-MM-DD/` for the generated image and `output/queue.json` for its caption and schedule. Local generation has no per-image OpenAI API charge; optional OpenAI generation incurs charges. To publish, configure your Meta professional account ID, access token, and Cloudinary URL, test access with `doctor`, and change `AUTO_PUBLISH=true` **only after verifying everything**.
 
 To enable the local Mac scheduler (runs every 15 minutes while the Mac is awake and logged in):
 
@@ -132,11 +132,11 @@ To disable it:
 ./disable_mac_schedule.sh
 ```
 
-See `snj.py` for the `demo`, `daily`, `publish`, `run`, `status`, and `doctor` commands. Uncertain publication outcomes must be checked manually to avoid duplicate posts.
+See `content_engine.py` for the `demo`, `daily`, `publish`, `run`, `status`, and `doctor` commands. Uncertain publication outcomes must be checked manually to avoid duplicate posts.
 
 ## ⚙️ Example configuration (planned)
 
-The keys below are supported by the included `snj.py` script. Use `.env.example` for the complete template.
+The keys below are supported by the included `content_engine.py` script. Use `.env.example` for the complete template.
 
 ```dotenv
 IMAGE_PROVIDER=local
@@ -150,7 +150,7 @@ INSTAGRAM_USER_ID=replace_with_account_id
 DAILY_COUNT=20
 AUTO_PUBLISH=false
 IMAGE_QUALITY=medium
-TIMEZONE=Asia/Dubai
+TIMEZONE=UTC
 ```
 
 > [!CAUTION]
@@ -202,4 +202,4 @@ No license has been chosen. Until a license file is added, standard copyright re
 
 The default provider uses **FLUX.2 Klein 4B** via **MFLUX**, with 4-bit quantization, its small text encoder, low-RAM mode, and 768×960 starting resolution. The model's Apache 2.0 license permits commercial use. Local caption templates also cost nothing. No paid OpenAI API is required unless you set `IMAGE_PROVIDER=openai` or `AI_CAPTIONS=true`.
 
-Generate one test with `.venv/bin/python snj.py daily`, review `output/`, then increase `DAILY_COUNT` gradually. Speed and output quality on your specific Mac have not been tested. Your Mac must remain awake; initial model download and Instagram publishing require internet. Meta publishing still requires a public image URL (the project uses optional Cloudinary).
+Generate one test with `.venv/bin/python content_engine.py daily`, review `output/`, then increase `DAILY_COUNT` gradually. Speed and output quality on your specific Mac have not been tested. Your Mac must remain awake; initial model download and Instagram publishing require internet. Meta publishing still requires a public image URL (the project uses optional Cloudinary).
