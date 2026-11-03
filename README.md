@@ -156,6 +156,35 @@ TIMEZONE=UTC
 > [!CAUTION]
 > Never commit real keys or your `.env` file. Add `.env`, local generated media and virtual environments to `.gitignore`. Revoke any credentials accidentally pushed to GitHub.
 
+
+## 🖥️ Local visual dashboard
+
+The project now includes a browser-based **Streamlit dashboard** with three sections:
+
+| Section | What it does |
+| --- | --- |
+| **Create Images** | Pick a product, visual style, extra instructions, and 1/2/5/10/20 images. Preview each render as it completes and download JPEGs. |
+| **Instagram** | Inspect queued posts and explicitly confirm a publish action; gallery images are never automatically posted. |
+| **Automation** | Review the existing local scheduler and its configuration, with links to enable/disable scripts. |
+
+Install dependencies and launch the UI:
+
+```bash
+git pull
+./install_mac.sh
+./install_local_ai.sh
+chmod +x launch_dashboard.sh
+./launch_dashboard.sh
+```
+
+Open **http://127.0.0.1:8501** on your Mac if the browser does not open by itself. The server binds to your loopback interface only and is not a publicly hosted website.
+
+**Test safely:** first select one product, choose **1 image**, and click **Generate images**. The first generation may download large model files. Watch the progress and check the local image preview. Generated JPEGs are stored under `output/`. The model runs on the Mac, but the first download needs internet.
+
+**Keep the dashboard local:** do not bind the server to `0.0.0.0` or expose port 8501 to the public internet. Instagram requires separate credentials and an explicit publish confirmation. The Mac scheduler is not enabled by visiting the dashboard.
+
+The local dashboard is a newly added implementation and has **not yet been tested on your M3 16 GB Mac**; report any terminal error output to help troubleshoot. Some older README references to image generation through paid APIs are specific to the optional OpenAI provider, not the default local model.
+
 ## 📈 Content volume
 
 The initial goal is **20 unique generated images per day**, or approximately **600 images per 30-day month**. Generation and publishing should be separate settings: you can create 20 images without publishing 20 posts. Actual Instagram API limits are account- and policy-dependent, so the publisher must query the current quota and handle rate limits.
