@@ -164,6 +164,25 @@ def create_images():
                                    key="download_"+str(image),use_container_width=True)
                 with st.expander("Prompt"):
                     st.write(item.get("prompt",""))
+                if st.button("Add to Instagram queue", key="queue_"+item["id"],
+                             use_container_width=True):
+                    with engine.single_instance():
+                        db = engine.load_db()
+                        if any(x.get("source_id")==item["id"] for x in db["items"]):
+                            st.info("This image is already in the queue.")
+                        else:
+                            now = engine.now()
+                            post = {
+                                "id":str(uuid.uuid4()),"source_id":item["id"],
+                                "day":now.date().isoformat(),"seq":len(db["items"])+1,
+                                "category":item["category"],"title":item["category"].title()+" Concept",
+                                "prompt":item["prompt"],"path":str(image.relative_to(ROOT)),
+                                "schedule":now.isoformat(),"status":"ready"
+                            }
+                            post["caption"]=engine.fallback_caption(post)
+                            db["items"].append(post)
+                            engine.save_db(db)
+                            st.success("Added to queue. Not published.")
 
 
 def instagram():
@@ -199,17 +218,55 @@ def instagram():
 
 def automation():
     hero("03 / SCHEDULING CENTER","Automate on your schedule.",
-         "Run the existing local queue on your Mac using macOS launchd.")
-    st.warning("Scheduling does not start from this page. This keeps your initial image tests completely separate from publishing.")
-    st.subheader("Mac scheduling")
-    st.write("The provided scripts install a LaunchAgent that checks for work every 15 minutes while your Mac is awake and logged in.")
-    st.code("./enable_mac_schedule.sh\n./disable_mac_schedule.sh",language="bash")
-    st.subheader("Current configuration")
-    a,b,c = st.columns(3)
-    a.metric("Daily target",os.getenv("DAILY_COUNT","20"))
-    b.metric("Auto-publish",os.getenv("AUTO_PUBLISH","false"))
-    c.metric("Timezone",os.getenv("TIMEZONE","UTC"))
-    st.caption("AUTO_PUBLISH must be enabled separately in your local configuration after successful live tests.")
+         "Choose your daily target, save the settings, and optionally enable Mac scheduling.")
+    st.info("Auto-publishing remains disabled unless you deliberately change AUTO_PUBLISH in your private configuration.")
+    env_path = ROOT/".env"
+    if not env_path.exists():
+        st.warning("Run the Mac installer first to create your local configuration.")
+        return
+    with st.form("scheduler_settings"):
+        daily_target = st.select_slider("Daily image target", options=[1,2,5,10,15,20],
+            value=min([1,2,5,10,15,20], key=lambda n:abs(n-int(os.getenv("DAILY_COUNT","20")))))
+        a,b=st.columns(2)
+        with a:
+            first=st.selectbox("Posting window starts",list(range(0,23)),
+                index=min(22,int(os.getenv("POST_START_HOUR","8"))))
+        with b:
+            last=st.selectbox("Posting window ends",list(range(1,24)),
+                index=min(22,max(0,int(os.getenv("POST_END_HOUR","22"))-1)))
+        submitted=st.form_submit_button("Save schedule settings",use_container_width=True)
+    if submitted:
+        if first >= last:
+            st.error("The end hour must be later than the start hour.")
+        else:
+            from dotenv import set_key
+            set_key(str(env_path),"DAILY_COUNT",str(daily_target))
+            set_key(str(env_path),"POST_START_HOUR",str(first))
+            set_key(str(env_path),"POST_END_HOUR",str(last))
+            st.success("Settings saved. Restart the dashboard to refresh its displayed values.")
+    st.divider()
+    st.subheader("Local Mac scheduler")
+    st.write("The LaunchAgent checks every 15 minutes while the Mac is awake and logged in.")
+    confirm = st.checkbox("I understand that enabling this will start scheduled local jobs.")
+    a,b=st.columns(2)
+    with a:
+        if st.button("Enable scheduler",disabled=not confirm,use_container_width=True):
+            result=subprocess.run(["/bin/zsh",str(ROOT/"enable_mac_schedule.sh")],
+                                  cwd=ROOT,capture_output=True,text=True,timeout=30)
+            if result.returncode==0:
+                st.success("Mac scheduler enabled.")
+            else:
+                st.error(result.stderr or result.stdout)
+    with b:
+        if st.button("Disable scheduler",use_container_width=True):
+            result=subprocess.run(["/bin/zsh",str(ROOT/"disable_mac_schedule.sh")],
+                                  cwd=ROOT,capture_output=True,text=True,timeout=30)
+            if result.returncode==0:
+                st.success("Mac scheduler disabled.")
+            else:
+                st.error(result.stderr or result.stdout)
+    st.caption("The scheduler runs the existing queue engine, not UI generation jobs. "
+               "Published posts require separate Instagram credentials and AUTO_PUBLISH=true.")
 
 if st.session_state.page=="Create Images":
     create_images()
