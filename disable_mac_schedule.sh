@@ -1,5 +1,5 @@
 #!/bin/zsh
-PLIST="$HOME/Library/LaunchAgents/com.snjinteriors.instagram.plist"
+PLIST="$HOME/Library/LaunchAgents/com.contentengine.publisher.plist"
 launchctl bootout "gui/$(id -u)" "$PLIST" 2>/dev/null || true
 rm -f "$PLIST"
 echo 'Local scheduler disabled. Existing images remain on your Mac.'
