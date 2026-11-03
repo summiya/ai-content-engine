@@ -20,4 +20,4 @@ if ! command -v mflux-generate-flux2 >/dev/null 2>&1; then
 fi
 echo "MFLUX installed. First generation will download FLUX.2 Klein 4B model files."
 echo "Edit .env: IMAGE_PROVIDER=local, DAILY_COUNT=1, AUTO_PUBLISH=false"
-echo "Then run: .venv/bin/python snj.py daily"
+echo "Then run: .venv/bin/python content_engine.py daily"
