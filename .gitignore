@@ -1,0 +1,14 @@
+# Never commit private credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+output/
+logs/
+.pytest_cache/
