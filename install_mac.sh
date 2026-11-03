@@ -14,7 +14,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r requirements.txt
 if [ ! -f .env ]; then cp .env.example .env; fi
-.venv/bin/python snj.py demo
-.venv/bin/python snj.py doctor
+.venv/bin/python content_engine.py demo
+.venv/bin/python content_engine.py doctor
 echo 'Installation finished.'
-echo 'Next: edit .env, test with .venv/bin/python snj.py daily, and review output/.'
+echo 'Next: edit .env, test with .venv/bin/python content_engine.py daily, and review output/.'
