@@ -10,6 +10,9 @@ import logging
 import os
 from pathlib import Path
 import random
+import shutil
+import subprocess
+import tempfile
 import sys
 import time
 import uuid
@@ -199,7 +202,42 @@ def caption_for(item):
         return fallback_caption(item)
 
 
+def generate_local(item):
+    """Generate locally using the installed MFLUX FLUX.2 klein 4B CLI."""
+    executable = shutil.which("mflux-generate-flux2")
+    if not executable:
+        raise RuntimeError(
+            "MFLUX not installed. Run ./install_local_ai.sh, then restart Terminal."
+        )
+    directory = ROOT / "output" / item["day"]
+    directory.mkdir(exist_ok=True, parents=True)
+    dest = directory / (
+        f"{item['seq']:02d}_{item['category'].replace(' ', '_')}_{item['id'][:8]}.jpg"
+    )
+    with tempfile.TemporaryDirectory(prefix="snj-flux-") as tmp:
+        raw_image = Path(tmp) / "generated.png"
+        command = [
+            executable, "--model", "flux2-klein-4b",
+            "--prompt", item["prompt"], "--steps", "4",
+            "--seed", str(int(uuid.UUID(item["id"])) % 2147483647),
+            "--width", os.getenv("LOCAL_IMAGE_WIDTH", "768"),
+            "--height", os.getenv("LOCAL_IMAGE_HEIGHT", "960"),
+            "--quantize", "4", "--small-text-encoder", "--low-ram",
+            "--output", str(raw_image)
+        ]
+        subprocess.run(command, check=True, timeout=3600, cwd=ROOT)
+        if not raw_image.is_file():
+            raise RuntimeError("MFLUX command returned without an image output")
+        prepare_photo(raw_image.read_bytes(), dest)
+    return str(dest.relative_to(ROOT))
+
+
 def generate_one(item):
+    provider = os.getenv("IMAGE_PROVIDER", "local").strip().lower()
+    if provider == "local":
+        return generate_local(item)
+    if provider != "openai":
+        raise ValueError("IMAGE_PROVIDER must be 'local' or 'openai'")
     from openai import OpenAI
     client = OpenAI(timeout=240.0, max_retries=2)
     result = client.images.generate(
@@ -217,8 +255,12 @@ def generate_one(item):
 
 
 def daily():
-    if not os.getenv("OPENAI_API_KEY"):
-        print("Missing OPENAI_API_KEY in .env")
+    provider = os.getenv("IMAGE_PROVIDER", "local").strip().lower()
+    if provider == "openai" and not os.getenv("OPENAI_API_KEY"):
+        print("Missing OPENAI_API_KEY in .env for OpenAI provider")
+        return
+    if provider == "local" and not shutil.which("mflux-generate-flux2"):
+        print("Local provider requires MFLUX. Run ./install_local_ai.sh first.")
         return
     today = now().date().isoformat()
     db = load_db()
@@ -408,7 +450,9 @@ def doctor():
     for name in ("OPENAI_API_KEY", "IG_USER_ID", "META_ACCESS_TOKEN", "CLOUDINARY_URL"):
         print(f"  {name}: {'configured' if os.getenv(name) else 'MISSING'}")
     print("  AUTO_PUBLISH:", os.getenv("AUTO_PUBLISH", "false"))
-    print("  IMAGE_MODEL:", os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-2"))
+    print("  IMAGE_PROVIDER:", os.getenv("IMAGE_PROVIDER", "local"))
+    print("  MFLUX_AVAILABLE:", bool(shutil.which("mflux-generate-flux2")))
+    print("  IMAGE_MODEL:", "flux2-klein-4b" if os.getenv("IMAGE_PROVIDER", "local") == "local" else os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-2"))
     print("  LOCAL_TIME:", now().isoformat())
     if os.getenv("IG_USER_ID") and os.getenv("META_ACCESS_TOKEN"):
         try:
