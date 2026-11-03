@@ -56,7 +56,7 @@ MATERIALS = ["bouclé upholstery", "woven linen upholstery", "premium velvet-loo
              "natural oak veneer", "matte lacquer finish", "textured fabric upholstery"]
 CTA = [
     "Message us on Instagram to discuss product options.",
-    "DM DEMO Interiors for product details and available options.",
+    "DM Demo Studio for product details and available options.",
     "Looking for a tailored finish? Send us a DM.",
     "Ask us about custom dimensions and available materials via DM."
 ]
@@ -184,7 +184,7 @@ def caption_for(item):
         return fallback_caption(item)
     from openai import OpenAI
     prompt = (
-        f"Write ONE original Instagram caption for DEMO Interiors, a product content studio. "
+        f"Write ONE original Instagram caption for Demo Studio, a product content studio. "
         f"Product: {item['title']}, category: {item['category']}. "
         "Tone: tasteful, minimalist, concise, different from typical repetitive captions. "
         "2 short sentences max plus a direct message CTA. Do not promise exact prices, stock, "
